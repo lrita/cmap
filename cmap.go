@@ -14,7 +14,7 @@ const (
 	mOverflowGrowThreshold = 1 << 7
 )
 
-// A "thread" safe map of type AnyComparableType:Any.
+// Cmap is a "thread" safe map of type AnyComparableType:Any.
 // To avoid lock bottlenecks this map is dived to several map shards.
 type Cmap struct {
 	lock  sync.Mutex
