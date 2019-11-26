@@ -1,4 +1,4 @@
-# cmap [![Build Status](https://travis-ci.org/lrita/cmap.svg?branch=master)](https://travis-ci.org/lrita/cmap) [![GoDoc](https://godoc.org/github.com/lrita/cmap?status.png)](https://godoc.org/github.com/lrita/cmap) [![codecov](https://codecov.io/gh/lrita/cmap/branch/master/graph/badge.svg)](https://codecov.io/gh/lrita/cmap)
+# cmap [![Build Status](https://travis-ci.org/lrita/cmap.svg?branch=master)](https://travis-ci.org/lrita/cmap) [![GoDoc](https://godoc.org/github.com/lrita/cmap?status.png)](https://godoc.org/github.com/lrita/cmap) [![codecov](https://codecov.io/gh/lrita/cmap/branch/master/graph/badge.svg)](https://codecov.io/gh/lrita/cmap) [![Go Report Card](https://goreportcard.com/badge/github.com/lrita/cmap)](https://goreportcard.com/report/github.com/lrita/cmap)
 
 The `map` type in Go doesn't support concurrent reads and writes. `cmap(concurrent-map)` provides a high-performance solution to this by sharding the map with minimal time spent waiting for locks.
 
