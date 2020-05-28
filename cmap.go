@@ -254,9 +254,14 @@ func (b *bucket) tryStore(m *Cmap, n *inode, check bool, key, value interface{})
 		}
 	}
 
+	l0 := len(b.m) // Using length check existence is faster than accessing.
 	b.m[key] = value
 	length := len(b.m)
 	b.lock.Unlock()
+
+	if l0 == length {
+		return true
+	}
 
 	// Update counter
 	grow := atomic.AddInt64(&m.count, 1) >= n.growThreshold

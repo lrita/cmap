@@ -182,6 +182,27 @@ func TestMapCreation(t *testing.T) {
 	}
 }
 
+func TestStoreOperationDuplicatedKey(t *testing.T) {
+	m := cmap.Cmap{}
+	m.Store(t, "")
+	m.Store(t, "")
+	if v := m.Count(); v != 1 {
+		t.Errorf("map Count() should be %d, got %d", 1, v)
+	}
+	m.LoadOrStore("m", "")
+	if v := m.Count(); v != 2 {
+		t.Errorf("map Count() should be %d, got %d", 2, v)
+	}
+	m.Delete(t)
+	if v := m.Count(); v != 1 {
+		t.Errorf("map Count() should be %d, got %d", 1, v)
+	}
+	m.Delete(t)
+	if v := m.Count(); v != 1 {
+		t.Errorf("map Count() should be %d, got %d", 1, v)
+	}
+}
+
 func TestMapStoreAndLoad(t *testing.T) {
 	const mapSize = 1 << 14
 
