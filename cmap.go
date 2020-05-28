@@ -10,7 +10,7 @@ import (
 
 const (
 	mInitialSize           = 1 << 4
-	mOverflowThreshold     = 1 << 5
+	mOverflowThreshold     = 1 << 6
 	mOverflowGrowThreshold = 1 << 7
 )
 
