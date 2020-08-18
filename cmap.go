@@ -4,8 +4,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"unsafe"
-
-	"github.com/lrita/runtime2"
 )
 
 const (
@@ -45,7 +43,7 @@ type bucket struct {
 
 // Store sets the value for a key.
 func (m *Cmap) Store(key, value interface{}) {
-	hash := runtime2.Hash(key)
+	hash := ehash(key)
 	for {
 		inode, b := m.getInodeAndBucket(hash)
 		if b.tryStore(m, inode, false, key, value) {
@@ -58,7 +56,7 @@ func (m *Cmap) Store(key, value interface{}) {
 // value is present.
 // The ok result indicates whether value was found in the map.
 func (m *Cmap) Load(key interface{}) (value interface{}, ok bool) {
-	hash := runtime2.Hash(key)
+	hash := ehash(key)
 	_, b := m.getInodeAndBucket(hash)
 	return b.tryLoad(key)
 }
@@ -67,7 +65,7 @@ func (m *Cmap) Load(key interface{}) (value interface{}, ok bool) {
 // Otherwise, it stores and returns the given value.
 // The loaded result is true if the value was loaded, false if stored.
 func (m *Cmap) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool) {
-	hash := runtime2.Hash(key)
+	hash := ehash(key)
 	for {
 		inode, b := m.getInodeAndBucket(hash)
 		actual, loaded = b.tryLoad(key)
@@ -82,7 +80,7 @@ func (m *Cmap) LoadOrStore(key, value interface{}) (actual interface{}, loaded b
 
 // Delete deletes the value for a key.
 func (m *Cmap) Delete(key interface{}) {
-	hash := runtime2.Hash(key)
+	hash := ehash(key)
 	for {
 		inode, b := m.getInodeAndBucket(hash)
 		if b.tryDelete(m, inode, key) {
@@ -180,7 +178,7 @@ func (n *inode) initBucket(i uintptr) {
 				p.initBucket(i & p.mask)
 			}
 			for k, v := range pb.freeze() {
-				hash := runtime2.Hash(k)
+				hash := ehash(k)
 				if hash&n.mask == i {
 					b.m[k] = v
 				}
@@ -327,4 +325,18 @@ func (b *bucket) tryDelete(m *Cmap, n *inode, key interface{}) (done bool) {
 		go node.initBuckets()
 	}
 	return true
+}
+
+func ehash(i interface{}) uintptr {
+	return nilinterhash(noescape(unsafe.Pointer(&i)), 0xdeadbeef)
+}
+
+//go:linkname nilinterhash runtime.nilinterhash
+func nilinterhash(p unsafe.Pointer, h uintptr) uintptr
+
+//go:nocheckptr
+//go:nosplit
+func noescape(p unsafe.Pointer) unsafe.Pointer {
+	x := uintptr(p)
+	return unsafe.Pointer(x ^ 0)
 }
