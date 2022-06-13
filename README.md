@@ -41,6 +41,20 @@ The package is now imported under the "cmap" namespace.
 	// Deletes item under key "foo"
 	m.Delete("foo")
 
+	// If you are using g1.18+, you can use the generics implementation
+
+	var n cmap.Map[string, string]
+
+	// Stores item within map, sets "bar" under key "foo"
+	n.Store("foo", "bar")
+
+	// Retrieve item from map.
+	if tmp, ok := n.Load("foo"); ok {
+	    bar := tmp
+	}
+
+	// Deletes item under key "foo"
+	n.Delete("foo")
 ```
 
 ## benchmark
