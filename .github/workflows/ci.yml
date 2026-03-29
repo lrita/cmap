@@ -1,0 +1,60 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  go-fmt-and-vet:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+    - name: Setup Go
+      uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
+      with:
+        go-version: '1.23'
+        cache: true
+    - name: Go Formatting
+      run: |
+        files=$(go fmt ./...)
+        if [ -n "$files" ]; then
+          echo "The following file(s) do not conform to go fmt:"
+          echo "$files"
+          exit 1
+        fi
+  test:
+    needs: go-fmt-and-vet
+    name: Test with Go ${{ matrix.go-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go-version: ['1.19', '1.20', '1.21', '1.22', '1.23', '1.24', '1.25', '1.26']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache: true
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Run Tests
+        run: go test -v -race ./...
