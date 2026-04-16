@@ -16,7 +16,7 @@ import (
 type Map[K comparable, V any] struct {
 	lock  sync.Mutex
 	inode unsafe.Pointer // *inode2
-	typ   *rtype
+	typ   atomic.Pointer[rtype]
 	count int64
 }
 
@@ -400,23 +400,23 @@ func efaceOf(ep *any) *eface {
 }
 
 func (m *Map[K, V]) ehash(i K) uintptr {
-	if m.typ == nil {
-		func() {
-			m.lock.Lock()
-			defer m.lock.Unlock()
-			if m.typ == nil {
-				// if K is interface type, then the direct reflect.TypeOf(K).Kind return reflect.Ptr
-				if typ := reflect.TypeOf(&i); typ.Elem().Kind() == reflect.Interface {
-					panic("not support interface type")
-				}
-				var e any = i
-				m.typ = efaceOf(&e).typ
+	typ := m.typ.Load()
+	if typ == nil {
+		m.lock.Lock()
+		if m.typ.Load() == nil {
+			// if K is interface type, then the direct reflect.TypeOf(K).Kind return reflect.Ptr
+			if typ := reflect.TypeOf(&i); typ.Elem().Kind() == reflect.Interface {
+				panic("not support interface type")
 			}
-		}()
+			var e any = i
+			m.typ.Store(efaceOf(&e).typ)
+		}
+		m.lock.Unlock()
+		typ = m.typ.Load()
 	}
 
 	var f eface
-	f.typ = m.typ
+	f.typ = typ
 	if f.typ.IsDirectIface() {
 		f.data = *(*unsafe.Pointer)(unsafe.Pointer(&i))
 	} else {
